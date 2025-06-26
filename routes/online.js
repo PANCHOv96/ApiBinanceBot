@@ -1,6 +1,8 @@
 import { Router } from "express";
 import { DATA } from '../utils/data.js';
 import { signedRequest } from '../utils/firmaBinance.js'
+import { sendLogger } from '../utils/loggerHandler.js'
+import { sendError } from '../utils/errorHandler.js'
 
 export const OnlineConnection = Router()
 
@@ -30,32 +32,51 @@ OnlineConnection.get('/',async (req,res)=>{
 // ✅ Obtener precio de un par COIN-M
 OnlineConnection.get('/obtener-precio',async (req,res)=>{
     try{
-        if (req.query.symbol){
+        const symbol = req.query.symbol
+        if (symbol){
             const params = {
-                symbol: req.query.symbol // Por ejemplo, "BTCUSD"
-            };
-            const nameContract = req.query.nameContract;
-            const result = await signedRequest(
-                'GET',
-                data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].obtenerPrecio,  
-                params
-                );
-            res.status(200).json(
-                {
-                    result: {
-                        symbol: result[0].ps,
-                        price: parseFloat(result[0].price) 
-                    }
+            symbol // Por ejemplo, "BTCUSD"
+        };
+        const nameContract = req.query.nameContract;
+        const result = await signedRequest(
+            'GET',
+            data_base,
+            base_url,
+            DATA.url[nameContract].obtenerPrecio, 
+            params
+            );
+        sendLogger({
+            endpoint:"/obtener-precio",
+            loggerLocation: 'ApiBinanceBot',
+            loggerMessage: 'Operación exitosa',
+            symbol,
+        });
+        res.status(200).json(
+            {
+                result: {
+                    symbol: result.symbol,
+                    price: parseFloat(result.price) 
                 }
+            }
         )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos'})
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/obtener-precio",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).send({ error: msg })
         }
     }
     catch(error){
-        console.log(`/obtener-precio ERROR: ${error}`)
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/obtener-precio",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
         res.status(404).send({ error: 'envio de datos incorrectos'})
     }
 })
@@ -64,7 +85,7 @@ OnlineConnection.get('/obtener-precio',async (req,res)=>{
 OnlineConnection.post('/iniciar-trade-nuevo',async (req,res)=>{
     try{
         const { nameContract, symbol, type, side, quantity} = req.body;
-        if (nameContract && symbol && type && side && quantity){
+        if (symbol && type && side && quantity){
             const params = {
                 symbol, 
                 type,
@@ -74,24 +95,39 @@ OnlineConnection.post('/iniciar-trade-nuevo',async (req,res)=>{
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].ordenes,  
+                base_url,
+                DATA.url[nameContract].ordenes, 
                 params
                 );
-            // if (result) {
-            //     console.log(`Se creo la posicion del par ${params.symbol} correctamete`);
-            // }
+            sendLogger({
+                endpoint:"/iniciar-trade-nuevo",
+                loggerLocation: 'ApiBinanceBot',
+                loggerMessage: 'Operación exitosa',
+                symbol,
+            });
             res.status(200).json(
                 {
                     result: 'OK'
                 }
             )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos' })
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/iniciar-trade-nuevo",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).send({ error: msg })
         }
     }
     catch(error){
-        console.log(`/iniciar-trade-nuevo ERROR: ${error}`)
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/iniciar-trade-nuevo",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
         res.status(404).send({ error: 'envio de datos incorrectos'})
     }
 })
@@ -100,7 +136,7 @@ OnlineConnection.post('/iniciar-trade-nuevo',async (req,res)=>{
 OnlineConnection.post('/eliminar-reducir-trade',async (req,res)=>{
     try{
         const { nameContract, symbol, type, side, quantity, priceLimit} = req.body;
-        if (nameContract && symbol && type && side && quantity){
+        if (symbol && type && side && quantity){
             const params = {
                 symbol, 
                 type,
@@ -115,25 +151,41 @@ OnlineConnection.post('/eliminar-reducir-trade',async (req,res)=>{
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].ordenes,  
+                base_url,
+                DATA.url[nameContract].ordenes, 
                 params
                 );
-            // if (result) {
-            //     console.log(`El balance de la cuenta actualmentes es: `, result);
-            // }
+            sendLogger({
+                endpoint:"/eliminar-reducir-trade",
+                loggerLocation: 'ApiBinanceBot',
+                loggerMessage: 'Operación exitosa',
+                symbol,
+            });
             res.status(200).json(
                 {
                     result: 'OK'
                 }
             )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos' })
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/eliminar-reducir-trade",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).send({ error: msg })
         }
     }
     catch(error){
-        console.log(`/eliminar-reducir-trade ERROR: ${error}`)
-        res.status(404).send({ error: 'envio de datos incorrectos'})
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/eliminar-reducir-trade",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
+        // throw new Error(error)
+        res.status(404).json(error)
     }
 })
 
@@ -141,7 +193,7 @@ OnlineConnection.post('/eliminar-reducir-trade',async (req,res)=>{
 OnlineConnection.post('/trailingstop-trade',async (req,res)=>{
     try{
         const { nameContract, symbol, side, quantity, stopPrice} = req.body;
-        if (nameContract && symbol && side && quantity && stopPrice){
+        if (symbol && side && quantity && stopPrice){
             const params = {
                 symbol, 
                 type:"STOP_MARKET",
@@ -150,35 +202,42 @@ OnlineConnection.post('/trailingstop-trade',async (req,res)=>{
                 quantity,
                 closePosition: true,
             };
-            // const deletes = await signedRequest(
-            //     'DELETE',
-            //     data_base,
-            //     DATA.tesnet.url.cerrarOrdenes, 
-            //     {
-            //         symbol: params.symbol
-            //     }
-            //     );
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].ordenes,  
+                base_url,
+                DATA.url[nameContract].ordenes, 
                 params
                 );
-            // if (result) {
-            //     console.log(`El precio del trailing se del par ${params.symbol} modifico correctamente`);
-            // }
+            sendLogger({
+                endpoint:"/trailingstop-trade",
+                loggerLocation: 'ApiBinanceBot',
+                loggerMessage: 'Operación exitosa',
+                symbol,
+            });
             res.status(200).json(
                 {
                     result: result
                 }
             )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos' })
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/trailingstop-trade",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).send({ error: msg })
         }
     }
     catch(error){
-        console.log(`/trailingstop-trade ERROR: ${error}`)
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/trailingstop-trade",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
         res.status(404).send({ error: 'envio de datos incorrectos'})
     }
 })
@@ -186,32 +245,48 @@ OnlineConnection.post('/trailingstop-trade',async (req,res)=>{
 // ✅ Cerrar todas Ordenes de un par COIN-M
 OnlineConnection.delete('/cerrar-ordenes',async (req,res)=>{  
     try{
-        if (req.body.symbol){
+        const symbol = req.body.symbol
+        if (symbol){
             const params = {
-                symbol: req.body.symbol // Por ejemplo, "BTCUSD"
+                symbol // Por ejemplo, "BTCUSD"
             };
             const nameContract = req.body.nameContract;
             const result = await signedRequest(
                 'DELETE',
                 data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].cerrarOrdenes,  
+                base_url,
+                DATA.url[nameContract].cerrarOrdenes, 
                 params
                 );
-            // if (result) {
-            //     console.log(`Ordenes canceladas del par ${params.symbol}`);
-            // }
+            sendLogger({
+                endpoint:"/cerrar-ordenes",
+                loggerLocation: 'ApiBinanceBot',
+                loggerMessage: 'Operación exitosa',
+                symbol,
+            });
             res.status(200).json(
                 {
                     result: 'OK'
                 }
             )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos' })
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/cerrar-ordenes",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).send({ error: msg })
         }
     }
     catch(error){
-        console.log(`/cerrar-ordenes ERROR: ${error}`)
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/cerrar-ordenes",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
         res.status(404).send({ error: 'envio de datos incorrectos'})
     }
 })
@@ -219,34 +294,49 @@ OnlineConnection.delete('/cerrar-ordenes',async (req,res)=>{
 // ✅ Posiciones abiertas de un par COIN-M
 OnlineConnection.get('/posiciones-abiertas',async (req,res)=>{
     try{
-        if (req.query.symbol){
+        const symbol = req.query.symbol
+        if (symbol){
             const params = {
-                symbol: req.query.symbol // Por ejemplo, "BTCUSD"
+                symbol // Por ejemplo, "BTCUSD"
             };
-            const nameContract = req.query.nameContract
+            const nameContract = req.query.nameContract;
             const result = await signedRequest(
                 'GET',
                 data_base,
-                base_url[nameContract],
-                DATA.url[nameContract].posicionesAbiertas,  
+                base_url,
+                DATA.url[nameContract].posicionesAbiertas, 
                 params
                 );
             var resultado = result.find(x => x.symbol == params.symbol)
-            // if (result) {
-            //     console.log(`Cantidad de posiciones abiertas en el par ${params.symbol}: `, 
-            //     resultado ? Math.abs(parseFloat(resultado.positionAmt)) : 0);
-            // }
+            sendLogger({
+                endpoint:"/posiciones-abiertas",
+                loggerLocation: 'ApiBinanceBot',
+                loggerMessage: 'Operación exitosa',
+                symbol,
+            });
             res.status(200).json(
                 {
                     result: resultado ? parseFloat(resultado.positionAmt) : 0
                 }
             )
         }else{
-            res.status(404).send({ error: 'envio de datos incorrectos' })
+            const msg = 'envio de datos incorrectos';
+            sendError({
+                endpoint:"/posiciones-abiertas",
+                errorLocation: 'ApiBinanceBot',
+                errorMessage: msg
+            });
+            res.status(404).json({ error: msg })
         }
     }
     catch(error){
-        console.log(`/posiciones-abiertas ERROR: ${error}`)
-        res.status(404).send({ error: 'envio de datos incorrectos'})
+        const errorMsg = JSON.parse(error.message)
+        sendError({
+            endpoint:"/posiciones-abiertas",
+            errorLocation: 'ApiBinanceBot',
+            errorCode: errorMsg?.code || '',
+            errorMessage: errorMsg?.msg || ''
+        });
+        res.status(404).json({ error: 'envio de datos incorrectos'})
     }
 })

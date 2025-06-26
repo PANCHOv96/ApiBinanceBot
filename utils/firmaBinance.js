@@ -1,5 +1,6 @@
 import axios from 'axios'
 import crypto from 'crypto'
+import { sendError } from './errorHandler.js';
 
 // FUNCIONES 
 export async function signedRequest(method,data_base = {},base_url, endpoint, params = {}) {
@@ -27,5 +28,7 @@ export async function signedRequest(method,data_base = {},base_url, endpoint, pa
         return res.data;
     } catch (err) {
         console.error('Error en la solicitud:', err.response?.data || err.message);
+        const error = { code: err.response?.data?.code , msg: err.response?.data?.msg || err.message}
+        throw new Error(JSON.stringify(error));
     }
 }
