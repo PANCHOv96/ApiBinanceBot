@@ -41,7 +41,7 @@ OnlineConnection.get('/obtener-precio',async (req,res)=>{
         const result = await signedRequest(
             'GET',
             data_base,
-            base_url,
+            base_url[nameContract],
             DATA.url[nameContract].obtenerPrecio, 
             params
             );
@@ -95,7 +95,7 @@ OnlineConnection.post('/iniciar-trade-nuevo',async (req,res)=>{
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url,
+                base_url[nameContract],
                 DATA.url[nameContract].ordenes, 
                 params
                 );
@@ -151,7 +151,7 @@ OnlineConnection.post('/eliminar-reducir-trade',async (req,res)=>{
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url,
+                base_url[nameContract],
                 DATA.url[nameContract].ordenes, 
                 params
                 );
@@ -205,7 +205,7 @@ OnlineConnection.post('/trailingstop-trade',async (req,res)=>{
             const result = await signedRequest(
                 'POST',
                 data_base,
-                base_url,
+                base_url[nameContract],
                 DATA.url[nameContract].ordenes, 
                 params
                 );
@@ -254,7 +254,7 @@ OnlineConnection.delete('/cerrar-ordenes',async (req,res)=>{
             const result = await signedRequest(
                 'DELETE',
                 data_base,
-                base_url,
+                base_url[nameContract],
                 DATA.url[nameContract].cerrarOrdenes, 
                 params
                 );
@@ -276,6 +276,7 @@ OnlineConnection.delete('/cerrar-ordenes',async (req,res)=>{
                 errorLocation: 'ApiBinanceBot',
                 errorMessage: msg
             });
+            throw new Error(msg);
             res.status(404).send({ error: msg })
         }
     }
@@ -303,7 +304,7 @@ OnlineConnection.get('/posiciones-abiertas',async (req,res)=>{
             const result = await signedRequest(
                 'GET',
                 data_base,
-                base_url,
+                base_url[nameContract],
                 DATA.url[nameContract].posicionesAbiertas, 
                 params
                 );
