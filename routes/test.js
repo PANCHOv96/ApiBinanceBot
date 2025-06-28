@@ -195,7 +195,7 @@ TestConnection.post('/trailingstop-trade',async (req,res)=>{
         const { nameContract, symbol, side, quantity, stopPrice} = req.body;
         if (symbol && side && quantity && stopPrice){
             const params = {
-                symbol, 
+                symbol,
                 type:"STOP_MARKET",
                 stopPrice,
                 side,
