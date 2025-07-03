@@ -28,7 +28,7 @@ export const DATA = {
           posicionesAbiertas: '/fapi/v3/positionRisk'
         },
         COINM:{
-          obtenerPrecio: '/dapi/v2/ticker/price',
+          obtenerPrecio: '/dapi/v1/ticker/price',
           ordenes: '/dapi/v1/order',
           cerrarOrdenes: '/dapi/v1/allOpenOrders',
           posicionesAbiertas: '/dapi/v1/positionRisk'

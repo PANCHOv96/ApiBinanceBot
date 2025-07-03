@@ -14,7 +14,7 @@ export async function signedRequest(method,data_base = {},base_url, endpoint, pa
         .digest('hex');
 
     const url = `${base_url}${endpoint}?${query}&signature=${signature}`;
-    //console.log('url: ',url)
+    console.log('url: ',url)
 
     try {
         const res = await axios({

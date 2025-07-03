@@ -54,8 +54,8 @@ TestConnection.get('/obtener-precio',async (req,res)=>{
         res.status(200).json(
             {
                 result: {
-                    symbol: result.symbol,
-                    price: parseFloat(result.price) 
+                    symbol: result.symbol ? result.symbol : result[0].symbol,
+                    price: parseFloat(result.price ? result.price : result[0].price)
                 }
             }
         )
